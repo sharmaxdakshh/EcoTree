@@ -1,6 +1,5 @@
 """
 EcoTree Interactive Dashboard – Streamlit
-Run with:  streamlit run app/streamlit_app.py
 """
 
 import streamlit as st
@@ -15,6 +14,8 @@ from src.analysis import (
     load_trees_df, get_summary_stats, zone_summary,
     species_summary, get_critical_trees
 )
+from src.data_loader import generate_sample_data
+from src.database import init_db
 
 st.set_page_config(
     page_title="EcoTree Dashboard",
@@ -32,19 +33,21 @@ st.markdown("""
         font-weight: 700;
         margin-bottom: 0.2rem;
     }
-    .metric-card {
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        padding: 1rem;
-        border-radius: 10px;
-        border-left: 5px solid #2e7d32;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=600)
 def get_data():
-    return load_trees_df()
+    db_path = "database/trees.db"
+    
+    # Agar database nahi hai to automatically create kar do
+    if not os.path.exists(db_path):
+        with st.spinner("Creating sample database... Please wait"):
+            init_db(db_path)
+            generate_sample_data(n_trees=500, db_path=db_path)
+    
+    return load_trees_df(db_path)
 
 
 def main():
@@ -54,7 +57,7 @@ def main():
     try:
         df = get_data()
     except Exception as e:
-        st.error("Database not found. Please run first:  `python main.py init`")
+        st.error(f"Error loading data: {e}")
         st.stop()
 
     # Sidebar filters
@@ -108,9 +111,7 @@ def main():
         st.bar_chart(zone_carbon, color="#27ae60")
 
         st.subheader("Age Distribution")
-        st.histogram_chart = st.bar_chart(
-            filtered["age"].value_counts().sort_index(), color="#6a1b9a"
-        )
+        st.bar_chart(filtered["age"].value_counts().sort_index(), color="#6a1b9a")
 
     st.divider()
 
@@ -130,19 +131,14 @@ def main():
     st.subheader("Trees Needing Attention")
     critical_df = get_critical_trees(filtered, limit=25)
     if not critical_df.empty:
-        st.dataframe(
-            critical_df,
-            use_container_width=True,
-            hide_index=True
-        )
+        st.dataframe(critical_df, use_container_width=True, hide_index=True)
     else:
-        st.success("No critical or at-risk trees under current filters. Great job!")
+        st.success("No critical or at-risk trees under current filters.")
 
-    # ===== Raw Data Expander =====
     with st.expander("View Full Filtered Dataset"):
         st.dataframe(filtered, use_container_width=True, hide_index=True)
 
-    st.caption("EcoTree v1.0 • Data is simulated for demonstration purposes.")
+    st.caption("EcoTree v1.0 • Sample data for demonstration purposes.")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,23 @@
+database:
+  path: database/trees.db
+
+data:
+  sample_size: 800
+
+calculations:
+  carbon_factor: 0.5
+  oxygen_factor: 1.2
+
+health_weights:
+  dbh_growth: 0.30
+  leaf_condition: 0.25
+  bark_condition: 0.20
+  age_factor: 0.15
+  pest_score: 0.10
+
+zones:
+  - North Park
+  - Central Lake
+  - South Avenue
+  - East Garden
+  - West Colony

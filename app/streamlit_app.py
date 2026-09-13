@@ -24,13 +24,20 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS
 st.markdown("""
 <style>
     .main-header {
-        font-size: 2.4rem;
+        font-size: 2.3rem;
         color: #1a5f2a;
         font-weight: 700;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0;
+        margin-top: 8px;
+    }
+    .subtitle {
+        color: #555;
+        font-size: 1rem;
+        margin-top: -5px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -50,8 +57,23 @@ def get_data():
 
 
 def main():
-    st.markdown('<p class="main-header">🌳 EcoTree Dashboard</p>', unsafe_allow_html=True)
-    st.caption("Tree Inventory • Health Analysis • Environmental Impact")
+    # ===== Logo + Header =====
+    col1, col2 = st.columns([0.7, 5.5])
+    
+    with col1:
+        # Logo path - app folder ke andar logo.png hona chahiye
+        if os.path.exists("app/logo.png"):
+            st.image("app/logo.png", width=80)
+        elif os.path.exists("logo.png"):
+            st.image("logo.png", width=80)
+        else:
+            st.markdown("🌳")
+    
+    with col2:
+        st.markdown('<p class="main-header">EcoTree Dashboard</p>', unsafe_allow_html=True)
+        st.markdown('<p class="subtitle">Tree Inventory • Health Analysis • Environmental Impact</p>', unsafe_allow_html=True)
+
+    st.markdown("---")
 
     try:
         df = get_data()
@@ -60,7 +82,7 @@ def main():
         st.stop()
 
     # Sidebar filters
-    st.sidebar.header("Filters")
+    st.sidebar.header("🔍 Filters")
     zones = ["All Zones"] + sorted(df["zone"].unique().tolist())
     selected_zone = st.sidebar.selectbox("Zone", zones)
 
